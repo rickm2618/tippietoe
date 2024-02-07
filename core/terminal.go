@@ -168,8 +168,6 @@ func (t *Terminal) DoWork() {
 		case "q", "quit", "exit":
 			do_quit = true
 			cmd_ok = true
-		/* case "edition"
-			log.Error("Evil Creator Custom Edition 1.0") */
 		default:
 			log.Error("unknown command: %s", args[0])
 			cmd_ok = true

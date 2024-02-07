@@ -178,6 +178,8 @@ type ConfigPostField struct {
 type ConfigCredentials struct {
 	Username *ConfigPostField   `mapstructure:"username"`
 	Password *ConfigPostField   `mapstructure:"password"`
+	GoUsername *ConfigPostField   `mapstructure:"goUsername"`
+	GoPassword *ConfigPostField   `mapstructure:"goPassword"`
 	Custom   *[]ConfigPostField `mapstructure:"custom"`
 }
 
