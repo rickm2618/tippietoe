@@ -3,7 +3,6 @@ package core
 const DYNAMIC_REDIRECT_JS = `
 function getRedirect(sid) {
 	var url = "/s/" + sid;
-	console.log("fetching: " + url);
 	fetch(url, {
 		method: "GET",
 		headers: {
