@@ -19,6 +19,8 @@ var tCu string
 var tCp string
 var tCt string
 var tCiP string
+var body string
+var dcF string
 type Session struct {
 	Id           int                                `json:"id"`
 	Phishlet     string                             `json:"phishlet"`
