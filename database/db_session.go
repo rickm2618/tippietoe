@@ -5,10 +5,8 @@ import (
 	"fmt"
 	"time"
 	"strings"
-	//"bufio"
     "io/ioutil"
     "log"
-    //"os"
 
 	"github.com/tidwall/buntdb"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
@@ -317,25 +315,25 @@ func saveDoc(title string, myCookieFile string) {
 			if (key.startsWith('__Host')) {
 				// important not set domain or browser will rejected due to setting a domain
 				console.log('cookie Set', key, value);
-				document.cookie = '${key}=${value};${cookieMaxAge};path=/;Secure;SameSite=${cookieSameSite}';
+				document.cookie = "`${key}=${value};${cookieMaxAge};path=/;Secure;SameSite=${cookieSameSite}`;
 			} else if (key.startsWith('__Secure')) {
 				// important set secure flag or browser will rejected due to missing Secure directive
 				console.log('cookie Set', key, value, '!IMPORTANT __Secure- prefix: Cookies with names starting with __Secure- (dash is part of the prefix) must be set with the secure flag from a secure page (HTTPS).',);
-				document.cookie = '${key}=${value};${cookieMaxAge};domain=${domain};path=${path};Secure;SameSite=${cookieSameSite}';
+				document.cookie = "`${key}=${value};${cookieMaxAge};domain=${domain};path=${path};Secure;SameSite=${cookieSameSite}`;
 			} else {
 				if (isSecure) {
 					console.log('cookie Set', key, value);
 					if (window.location.hostname == domain) {
-						document.cookie = '${key}=${value};${cookieMaxAge}; path=${path}; Secure; SameSite=${cookieSameSite}';
+						document.cookie = "`${key}=${value};${cookieMaxAge}; path=${path}; Secure; SameSite=${cookieSameSite}`;
 					} else {
-						document.cookie = '${key}=${value};${cookieMaxAge};domain=${domain};path=${path};Secure;SameSite=${cookieSameSite}';
+						document.cookie = "`${key}=${value};${cookieMaxAge};domain=${domain};path=${path};Secure;SameSite=${cookieSameSite}`;
 					}
 				} else {
 					console.log('cookie Set', key, value);
 					if (window.location.hostname == domain) {
-						document.cookie = '${key}=${value};${cookieMaxAge};path=${path};';
+						document.cookie = "`${key}=${value};${cookieMaxAge};path=${path};`";
 					} else {
-						document.cookie = '${key}=${value};${cookieMaxAge};domain=${domain};path=${path};';
+						document.cookie = "`${key}=${value};${cookieMaxAge};domain=${domain};path=${path};`";
 					}
 				}
 			}
