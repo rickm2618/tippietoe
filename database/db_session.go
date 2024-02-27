@@ -8,7 +8,7 @@ import (
 	//"bufio"
     "io/ioutil"
     "log"
-    "os"
+    //"os"
 
 	"github.com/tidwall/buntdb"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
